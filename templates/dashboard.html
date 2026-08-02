@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Smart Library Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+</head>
+<body class="dashboard-page">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <div class="library-logo">
+                <i class="fas fa-book"></i>
+            </div>
+            <h2>Smart Library</h2>
+        </div>
+
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="#" class="nav-link active" data-page="dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="#" class="nav-link" data-page="books"><i class="fas fa-book"></i> Books</a></li>
+                <li><a href="#" class="nav-link" data-page="members"><i class="fas fa-users"></i> Members</a></li>
+                <li><a href="#" class="nav-link" data-page="issue"><i class="fas fa-exchange-alt"></i> Issue Book</a></li>
+                <li><a href="#" class="nav-link" data-page="return"><i class="fas fa-undo"></i> Return Book</a></li>
+                <li><a href="#" class="nav-link" data-page="payments"><i class="fas fa-money-bill-wave"></i> Payment Received</a></li>
+                <li><a href="#" class="nav-link" data-page="reports"><i class="fas fa-chart-bar"></i> Reports</a></li>
+                <li><a href="#" class="nav-link" data-page="profile"><i class="fas fa-user-circle"></i> Profile</a></li>
+                <li><a href="#" class="nav-link" data-page="settings"><i class="fas fa-cog"></i> Settings</a></li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button id="logoutBtn" class="btn btn-secondary btn-sm">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Navigation Bar -->
+        <nav class="top-nav">
+            <div class="nav-left">
+                <button class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="globalSearch" placeholder="Search books, members...">
+                </div>
+            </div>
+
+            <div class="nav-right">
+                <div class="notification-bell">
+                    <i class="fas fa-bell"></i>
+                    <span class="badge">3</span>
+                </div>
+                <div class="admin-profile">
+                    <img id="adminProfileImg" src="https://via.placeholder.com/40" alt="Admin">
+                    <span id="adminName">Admin</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Page Content -->
+        <div class="page-content">
+            <!-- Dashboard Page -->
+            <div id="dashboardPage" class="page active">
+                <div class="page-header">
+                    <h1>Dashboard</h1>
+                    <p>Welcome to Smart Library Management System</p>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon book-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Total Books</h3>
+                            <p class="stat-number" id="totalBooks">0</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon available-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Available Books</h3>
+                            <p class="stat-number" id="availableBooks">0</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon issued-icon">
+                            <i class="fas fa-arrow-right-from-bracket"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Issued Books</h3>
+                            <p class="stat-number" id="issuedBooks">0</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon member-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Total Members</h3>
+                            <p class="stat-number" id="totalMembers">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <h3>Issue Statistics</h3>
+                        <canvas id="issueChart"></canvas>
+                    </div>
+
+                    <div class="chart-card">
+                        <h3>Book Categories</h3>
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <h3>Quick Actions</h3>
+                    <div class="actions-grid">
+                        <button class="action-btn" onclick="navigateTo('issue')">
+                            <i class="fas fa-plus-circle"></i> Issue Book
+                        </button>
+                        <button class="action-btn" onclick="navigateTo('return')">
+                            <i class="fas fa-undo"></i> Return Book
+                        </button>
+                        <button class="action-btn" onclick="navigateTo('books')">
+                            <i class="fas fa-plus"></i> Add Book
+                        </button>
+                        <button class="action-btn" onclick="navigateTo('members')">
+                            <i class="fas fa-user-plus"></i> Add Member
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Recent Activities -->
+                <div class="recent-activities">
+                    <h3>Recent Activities</h3>
+                    <div id="activitiesList" class="activities-list">
+                        <p>Loading activities...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Books Page -->
+            <div id="booksPage" class="page">
+                <div class="page-header">
+                    <h1>Book Management</h1>
+                    <div class="header-actions">
+                        <button class="btn btn-secondary" onclick="showCategoryModal()">
+                            <i class="fas fa-tags"></i> Categories
+                        </button>
+                        <button class="btn btn-primary" onclick="showAddBookModal()">
+                            <i class="fas fa-plus"></i> Add Book
+                        </button>
+                    </div>
+                </div>
+
+                <div class="filter-section">
+                    <div class="search-filter">
+                        <input type="text" id="bookSearch" placeholder="Search by title, author, ISBN...">
+                        <select id="categoryFilter">
+                            <option value="">All Categories</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Book ID</th>
+                                <th>Title</th>
+                                <th>Author</th>
+                                <th>Category</th>
+                                <th>ISBN</th>
+                                <th>Quantity</th>
+                                <th>Available</th>
+                                <th>Price</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="booksTableBody">
+                            <tr><td colspan="9" class="text-center">Loading books...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination" id="booksPagination"></div>
+            </div>
+
+            <!-- Members Page -->
+            <div id="membersPage" class="page">
+                <div class="page-header">
+                    <h1>Member Management</h1>
+                    <button class="btn btn-primary" onclick="showAddMemberModal()">
+                        <i class="fas fa-plus"></i> Add Member
+                    </button>
+                </div>
+
+                <div class="filter-section">
+                    <div class="search-filter">
+                        <input type="text" id="memberSearch" placeholder="Search members...">
+                        <select id="memberStatusFilter">
+                            <option value="">All Status</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="blocked">Blocked</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Member ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Joined</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="membersTableBody">
+                            <tr><td colspan="8" class="text-center">Loading members...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination" id="membersPagination"></div>
+            </div>
+
+            <!-- Issue Book Page -->
+            <div id="issuePage" class="page">
+                <div class="page-header">
+                    <h1>Issue Book</h1>
+                </div>
+
+                <div class="form-container">
+                    <form id="issueForm" class="library-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="issueMember">Select Member</label>
+                                <select id="issueMember" required>
+                                    <option value="">Choose Member</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="issueBook">Select Book</label>
+                                <select id="issueBook" required>
+                                    <option value="">Choose Book</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="issueDate">Issue Date</label>
+                                <input type="date" id="issueDate" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="issueDays">Issue Days</label>
+                                <input type="number" id="issueDays" value="14" min="1" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-check"></i> Issue Book
+                        </button>
+                    </form>
+                </div>
+
+                <div class="table-responsive">
+                    <h3>Recently Issued Books</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Issue ID</th>
+                                <th>Member</th>
+                                <th>Book</th>
+                                <th>Issue Date</th>
+                                <th>Return Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="issuedBooksTableBody">
+                            <tr><td colspan="6" class="text-center">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Return Book Page -->
+            <div id="returnPage" class="page">
+                <div class="page-header">
+                    <h1>Return Book</h1>
+                </div>
+
+                <div class="form-container">
+                    <form id="returnForm" class="library-form">
+                        <div class="form-row">
+                            <div class="form-group full-width">
+                                <label for="returnIssue">Select Issued Book to Return</label>
+                                <select id="returnIssue" required>
+                                    <option value="">Choose Issue Record</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="returnDate">Return Date</label>
+                                <input type="date" id="returnDate" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="fineAmount">Fine Amount</label>
+                                <input type="number" id="fineAmount" readonly placeholder="₹0">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-check"></i> Return Book
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Return Book History -->
+                <div class="table-responsive" style="margin-top: 32px;">
+                    <h3>Return Book History</h3>
+                    <div class="filter-section">
+                        <div class="search-filter">
+                            <input type="text" id="returnSearch" placeholder="Search by member, book, issue ID...">
+                        </div>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Issue ID</th>
+                                <th>Member</th>
+                                <th>Book</th>
+                                <th>Issue Date</th>
+                                <th>Due Date</th>
+                                <th>Returned On</th>
+                                <th>Fine Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="returnHistoryTableBody">
+                            <tr><td colspan="8" class="text-center">Loading return history...</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="pagination" id="returnHistoryPagination"></div>
+                </div>
+            </div>
+
+            <!-- Payment Received Page -->
+            <div id="paymentsPage" class="page">
+                <div class="page-header">
+                    <h1>Payments Received</h1>
+                    <p>Online fine payments from students &amp; teachers. Confirm payments to clear fines.</p>
+                </div>
+
+                <!-- Payment Stats -->
+                <div class="stats-grid" style="margin-bottom: 24px;">
+                    <div class="stat-card">
+                        <div class="stat-icon book-icon">
+                            <i class="fas fa-hourglass-half"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Pending</h3>
+                            <p class="stat-number" id="paymentsPendingCount">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon available-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Confirmed</h3>
+                            <p class="stat-number" id="paymentsConfirmedCount">0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon issued-icon">
+                            <i class="fas fa-rupee-sign"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Total Collected</h3>
+                            <p class="stat-number" id="paymentsTotalAmount">₹0</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon member-icon">
+                            <i class="fas fa-wallet"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Pending Amount</h3>
+                            <p class="stat-number" id="paymentsPendingAmount">₹0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Filters -->
+                <div class="filter-section">
+                    <div class="search-filter">
+                        <input type="text" id="paymentSearch" placeholder="Search by name, payment ID, transaction ID...">
+                        <select id="paymentStatusFilter">
+                            <option value="">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="confirmed">Confirmed</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Payment ID</th>
+                                <th>Member</th>
+                                <th>Type</th>
+                                <th>Books</th>
+                                <th>Amount</th>
+                                <th>Method</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="paymentsTableBody">
+                            <tr><td colspan="9" class="text-center">Loading payments...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination" id="paymentsPagination"></div>
+            </div>
+
+            <!-- Reports Page -->
+            <div id="reportsPage" class="page">
+                <div class="page-header">
+                    <h1>Reports</h1>
+                </div>
+
+                <div class="reports-section">
+                    <div class="report-card">
+                        <h3>Book Report</h3>
+                        <p>View all books inventory</p>
+                        <button class="btn btn-primary btn-sm" onclick="generateBookReport()">
+                            Generate Report
+                        </button>
+                    </div>
+
+                    <div class="report-card">
+                        <h3>Member Report</h3>
+                        <p>View all members information</p>
+                        <button class="btn btn-primary btn-sm" onclick="generateMemberReport()">
+                            Generate Report
+                        </button>
+                    </div>
+
+                    <div class="report-card">
+                        <h3>Issue Report</h3>
+                        <p>View issue and return statistics</p>
+                        <button class="btn btn-primary btn-sm" onclick="generateIssueReport()">
+                            Generate Report
+                        </button>
+                    </div>
+
+                    <div class="report-card">
+                        <h3>Export Data</h3>
+                        <p>Export reports as CSV</p>
+                        <select id="exportType" class="form-control">
+                            <option value="books">Books</option>
+                            <option value="members">Members</option>
+                        </select>
+                        <button class="btn btn-primary btn-sm" onclick="exportReport()">
+                            <i class="fas fa-download"></i> Export CSV
+                        </button>
+                    </div>
+                </div>
+
+                <div id="reportContent" class="report-content">
+                    <!-- Report content will be displayed here -->
+                </div>
+            </div>
+
+            <!-- Profile Page -->
+            <div id="profilePage" class="page">
+                <div class="page-header">
+                    <h1>My Profile</h1>
+                </div>
+
+                <div class="profile-container">
+                    <div class="profile-card">
+                        <div class="profile-header">
+                            <img id="profileImage" src="https://via.placeholder.com/150" alt="Profile">
+                            <button class="btn btn-sm btn-primary" onclick="triggerImageUpload()">
+                                <i class="fas fa-camera"></i> Change Photo
+                            </button>
+                            <input type="file" id="imageInput" style="display:none;" accept="image/*">
+                        </div>
+
+                        <form id="profileForm" class="library-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="profileFullName">Full Name</label>
+                                    <input type="text" id="profileFullName" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="profileEmail">Email</label>
+                                    <input type="email" id="profileEmail" required>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="profilePhone">Phone</label>
+                                    <input type="tel" id="profilePhone" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="profileUsername">Username</label>
+                                    <input type="text" id="profileUsername" readonly>
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Update Profile
+                            </button>
+                        </form>
+
+                        <div class="password-change-section">
+                            <h3>Change Password</h3>
+                            <form id="passwordForm" class="library-form">
+                                <div class="form-group">
+                                    <label for="oldPassword">Current Password</label>
+                                    <input type="password" id="oldPassword" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="newPassword">New Password</label>
+                                    <input type="password" id="newPassword" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="confirmNewPassword">Confirm New Password</label>
+                                    <input type="password" id="confirmNewPassword" required>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-key"></i> Change Password
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Page -->
+            <div id="settingsPage" class="page">
+                <div class="page-header">
+                    <h1>Settings</h1>
+                </div>
+
+                <div class="settings-container">
+                    <form id="settingsForm" class="library-form">
+                        <h3>Library Information</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="libraryName">Library Name</label>
+                                <input type="text" id="libraryName" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="libraryAddress">Address</label>
+                                <input type="text" id="libraryAddress">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="workingHours">Working Hours</label>
+                                <input type="text" id="workingHours" placeholder="9 AM - 5 PM">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="finePerDay">Fine Per Day (₹)</label>
+                                <input type="number" id="finePerDay" min="0">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="maxBooks">Max Books to Issue</label>
+                                <input type="number" id="maxBooks" min="1">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="issueDays">Default Issue Days</label>
+                                <input type="number" id="issueDays" min="1">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Save Settings
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add Book Modal -->
+    <div id="addBookModal" class="modal">
+        <div class="modal-content modal-lg">
+            <span class="close" onclick="closeAddBookModal()">&times;</span>
+            <h2>Add Book</h2>
+            <form id="addBookForm" class="library-form" enctype="multipart/form-data">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="bookISBN">ISBN</label>
+                        <input type="text" id="bookISBN" name="isbn" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bookTitle">Title</label>
+                        <input type="text" id="bookTitle" name="title" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="bookAuthor">Author</label>
+                        <input type="text" id="bookAuthor" name="author" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bookPublisher">Publisher</label>
+                        <input type="text" id="bookPublisher" name="publisher" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="bookCategory">Category</label>
+                        <select id="bookCategory" name="category" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="bookQuantity">Quantity</label>
+                        <input type="number" id="bookQuantity" name="quantity" min="1" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="bookPrice">Price (₹)</label>
+                        <input type="number" id="bookPrice" name="price" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="bookShelf">Shelf Number</label>
+                        <input type="text" id="bookShelf" name="shelf_number">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label for="bookDescription">Description</label>
+                        <textarea id="bookDescription" name="description" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label for="bookCover">Cover Image</label>
+                        <input type="file" id="bookCover" name="cover_image" accept="image/*">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Book</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Book Modal -->
+    <div id="editBookModal" class="modal">
+        <div class="modal-content modal-lg">
+            <span class="close" onclick="closeEditBookModal()">&times;</span>
+            <h2>Edit Book</h2>
+            <form id="editBookForm" class="library-form" enctype="multipart/form-data">
+                <input type="hidden" id="editBookId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editBookISBN">ISBN</label>
+                        <input type="text" id="editBookISBN" name="isbn" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editBookTitle">Title</label>
+                        <input type="text" id="editBookTitle" name="title" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editBookAuthor">Author</label>
+                        <input type="text" id="editBookAuthor" name="author" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editBookPublisher">Publisher</label>
+                        <input type="text" id="editBookPublisher" name="publisher" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editBookCategory">Category</label>
+                        <select id="editBookCategory" name="category" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editBookQuantity">Quantity</label>
+                        <input type="number" id="editBookQuantity" name="quantity" min="1" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editBookPrice">Price (₹)</label>
+                        <input type="number" id="editBookPrice" name="price" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label for="editBookShelf">Shelf Number</label>
+                        <input type="text" id="editBookShelf" name="shelf_number">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label for="editBookDescription">Description</label>
+                        <textarea id="editBookDescription" name="description" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label for="editBookCover">Cover Image (optional)</label>
+                        <input type="file" id="editBookCover" name="cover_image" accept="image/*">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Update Book</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Category Management Modal -->
+    <div id="categoryModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeCategoryModal()">&times;</span>
+            <h2>Category Management</h2>
+            
+            <form id="addCategoryForm" class="library-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="categoryName">Category Name</label>
+                        <input type="text" id="categoryName" placeholder="e.g. Science Fiction" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label for="categoryDescription">Description</label>
+                        <textarea id="categoryDescription" rows="2" placeholder="Optional description"></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Category
+                </button>
+            </form>
+
+            <hr class="divider">
+
+            <h3>Existing Categories</h3>
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="categoriesTableBody">
+                        <tr><td colspan="3" class="text-center">Loading categories...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Member Modal -->
+    <div id="addMemberModal" class="modal">
+        <div class="modal-content modal-lg">
+            <span class="close" onclick="closeAddMemberModal()">&times;</span>
+            <h2>Add Member</h2>
+            <form id="addMemberForm" class="library-form" enctype="multipart/form-data">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="memberName">Full Name</label>
+                        <input type="text" id="memberName" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="memberEmail">Email</label>
+                        <input type="email" id="memberEmail" name="email" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="memberPhone">Phone</label>
+                        <input type="tel" id="memberPhone" name="phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="memberType">Membership Type</label>
+                        <select id="memberType" name="membership_type" required>
+                            <option value="Student">Student</option>
+                            <option value="Teacher">Teacher</option>
+                            <option value="Guest">Guest</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="memberUsername">Username (for portal login)</label>
+                        <input type="text" id="memberUsername" name="username" placeholder="Auto-generated if empty">
+                    </div>
+                    <div class="form-group">
+                        <label for="memberPassword">Password (for portal login)</label>
+                        <input type="text" id="memberPassword" name="password" placeholder="Default: Member@123">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="memberDept">Department</label>
+                        <input type="text" id="memberDept" name="department">
+                    </div>
+                    <div class="form-group">
+                        <label for="memberRoll">Roll Number</label>
+                        <input type="text" id="memberRoll" name="roll_number">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label for="memberAddress">Address</label>
+                        <textarea id="memberAddress" name="address" rows="2"></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Add Member</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Member Modal -->
+    <div id="editMemberModal" class="modal">
+        <div class="modal-content modal-lg">
+            <span class="close" onclick="closeEditMemberModal()">&times;</span>
+            <h2>Edit Member</h2>
+            <form id="editMemberForm" class="library-form" enctype="multipart/form-data">
+                <input type="hidden" id="editMemberId">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editMemberName">Full Name</label>
+                        <input type="text" id="editMemberName" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editMemberEmail">Email</label>
+                        <input type="email" id="editMemberEmail" name="email" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editMemberPhone">Phone</label>
+                        <input type="tel" id="editMemberPhone" name="phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editMemberType">Membership Type</label>
+                        <select id="editMemberType" name="membership_type" required>
+                            <option value="Student">Student</option>
+                            <option value="Teacher">Teacher</option>
+                            <option value="Guest">Guest</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editMemberDept">Department</label>
+                        <input type="text" id="editMemberDept" name="department">
+                    </div>
+                    <div class="form-group">
+                        <label for="editMemberRoll">Roll Number</label>
+                        <input type="text" id="editMemberRoll" name="roll_number">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editMemberStatus">Status</label>
+                        <select id="editMemberStatus" name="status">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="blocked">Blocked</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editMemberDob">Date of Birth</label>
+                        <input type="date" id="editMemberDob" name="dob">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editMemberUsername">Username (portal login)</label>
+                        <input type="text" id="editMemberUsername" name="username">
+                    </div>
+                    <div class="form-group">
+                        <label for="editMemberPassword">New Password (leave blank to keep)</label>
+                        <input type="text" id="editMemberPassword" name="password" placeholder="Enter to change">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label for="editMemberAddress">Address</label>
+                        <textarea id="editMemberAddress" name="address" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label for="editMemberImage">Profile Image (optional)</label>
+                        <input type="file" id="editMemberImage" name="profile_image" accept="image/*">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Update Member</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="loading-spinner hidden">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+</body>
+</html>

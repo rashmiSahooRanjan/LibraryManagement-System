@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Smart Library Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="register-page">
+    <div class="register-container">
+        <div class="register-box">
+            <div class="register-header">
+                <div class="library-icon">
+                    <i class="fas fa-book"></i>
+                </div>
+                <h1>Create Account</h1>
+                <p>Smart Library Management System</p>
+            </div>
+
+            <form id="registerForm" class="register-form" enctype="multipart/form-data">
+                <!-- Role Selection -->
+                <div class="form-group full-width">
+                    <label>Register As</label>
+                    <div class="role-radio-group">
+                        <label class="role-radio-card" data-role="student">
+                            <input type="radio" name="role" value="student" checked>
+                            <span class="role-icon"><i class="fas fa-user-graduate"></i></span>
+                            <span class="role-label">Student</span>
+                        </label>
+                        <label class="role-radio-card" data-role="teacher">
+                            <input type="radio" name="role" value="teacher">
+                            <span class="role-icon"><i class="fas fa-chalkboard-teacher"></i></span>
+                            <span class="role-label">Teacher</span>
+                        </label>
+                        <label class="role-radio-card" data-role="librarian">
+                            <input type="radio" name="role" value="librarian">
+                            <span class="role-icon"><i class="fas fa-user-tie"></i></span>
+                            <span class="role-label">Librarian</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="fullName" name="full_name" placeholder="Enter full name" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="email" name="email" placeholder="Enter email" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-phone"></i>
+                            <input type="tel" id="phone" name="phone" placeholder="Enter phone number" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-user-circle"></i>
+                            <input type="text" id="username" name="username" placeholder="Choose username" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Student/Teacher only fields -->
+                <div class="form-row" id="departmentField">
+                    <div class="form-group">
+                        <label for="department">Department</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-building"></i>
+                            <input type="text" id="department" name="department" placeholder="e.g. Computer Science">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="rollNumber">Roll Number</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-id-badge"></i>
+                            <input type="text" id="rollNumber" name="roll_number" placeholder="e.g. CS2024001">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="password" name="password" placeholder="Enter password" required>
+                        </div>
+                        <small>Min 6 chars, must include uppercase, lowercase, and numbers</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm Password</label>
+                        <div class="input-wrapper">
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="confirmPassword" name="confirm_password" placeholder="Confirm password" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group full-width">
+                    <label for="profileImage">Profile Photo (Optional)</label>
+                    <div class="file-upload">
+                        <input type="file" id="profileImage" name="profile_image" accept="image/*">
+                        <label for="profileImage" class="file-label">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>Choose Image</span>
+                        </label>
+                        <div id="imagePreview" class="image-preview"></div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-register">
+                    <i class="fas fa-user-plus"></i> Create Account
+                </button>
+            </form>
+
+            <div class="register-footer">
+                <p>Already have an account? <a href="{{ url_for('auth.login') }}">Login here</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        // Role selection handling
+        function handleRoleChange() {
+            const selectedRole = document.querySelector('input[name="role"]:checked')?.value || 'student';
+            const departmentField = document.getElementById('departmentField');
+            
+            document.querySelectorAll('.role-radio-card').forEach(card => {
+                card.classList.toggle('selected', card.getAttribute('data-role') === selectedRole);
+            });
+            
+            // Hide department/roll fields for Librarian
+            if (selectedRole === 'librarian') {
+                departmentField.style.display = 'none';
+            } else {
+                departmentField.style.display = 'grid';
+            }
+        }
+
+        document.querySelectorAll('input[name="role"]').forEach(radio => {
+            radio.addEventListener('change', handleRoleChange);
+        });
+
+        // Preview profile image
+        document.getElementById('profileImage').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const preview = document.getElementById('imagePreview');
+            
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    preview.innerHTML = '<img src="' + event.target.result + '" alt="Preview">';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Handle registration form submission
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            
+            const username = formData.get('username');
+            const password = formData.get('password');
+            const confirmPassword = formData.get('confirm_password');
+            const email = formData.get('email');
+            const phone = formData.get('phone');
+            const fullName = formData.get('full_name');
+            const role = formData.get('role') || 'student';
+
+            // Basic validation
+            if (password.length < 6) {
+                showToast('Password must be at least 6 characters', 'error');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showToast('Passwords do not match', 'error');
+                return;
+            }
+
+            if (!/^\d{10}$/.test(phone.replace(/\D/g, ''))) {
+                showToast('Phone number must be 10 digits', 'error');
+                return;
+            }
+
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    const roleMessage = role === 'librarian' 
+                        ? 'Librarian account created! Opening admin dashboard...'
+                        : role === 'teacher' 
+                            ? 'Teacher account created! Opening teacher dashboard...'
+                            : 'Student account created! Opening student dashboard...';
+                    showToast(roleMessage, 'success');
+                    setTimeout(() => {
+                        window.location.href = data.redirect || '/login';
+                    }, 1500);
+                } else {
+                    showToast(data.message || 'Registration failed', 'error');
+                }
+            } catch (error) {
+                showToast('An error occurred', 'error');
+            }
+        });
+
+        // Initialize role selection on load
+        handleRoleChange();
+
+        // Show toast notification
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast show ${type}`;
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

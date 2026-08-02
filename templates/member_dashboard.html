@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member Dashboard - Smart Library Management System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/payment-gateway.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="member-dashboard-page" data-role="{{ session.get('member_type', 'student') }}">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar member-sidebar">
+        <div class="sidebar-header">
+            <div class="library-logo">
+                <i class="fas fa-book"></i>
+            </div>
+            <h2>Library Portal</h2>
+            <p class="member-role-badge" id="memberRoleBadge">Student</p>
+        </div>
+
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="#" class="nav-link active" data-page="dashboard"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="#" class="nav-link" data-page="books"><i class="fas fa-book"></i> Browse Books</a></li>
+                <li><a href="#" class="nav-link" data-page="my-issues"><i class="fas fa-exchange-alt"></i> My Issued Books</a></li>
+                <li><a href="#" class="nav-link" data-page="my-returns"><i class="fas fa-undo"></i> My Returned Books</a></li>
+                <li><a href="#" class="nav-link" data-page="pay-fines"><i class="fas fa-credit-card"></i> Pay Fines</a></li>
+                <li><a href="#" class="nav-link" data-page="new-arrivals"><i class="fas fa-star"></i> New Arrivals</a></li>
+                <li><a href="#" class="nav-link" data-page="profile"><i class="fas fa-user-circle"></i> My Profile</a></li>
+            </ul>
+        </nav>
+
+        <div class="sidebar-footer">
+            <button id="memberLogoutBtn" class="btn btn-secondary btn-sm">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Navigation Bar -->
+        <nav class="top-nav">
+            <div class="nav-left">
+                <button class="menu-toggle" onclick="toggleSidebar()">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="globalSearch" placeholder="Search books...">
+                </div>
+            </div>
+
+            <div class="nav-right">
+                <div class="admin-profile">
+                    <img id="memberProfileImg" src="https://via.placeholder.com/40" alt="Member">
+                    <span id="memberName">Member</span>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Page Content -->
+        <div class="page-content">
+            <!-- Dashboard Page -->
+            <div id="dashboardPage" class="page active">
+                <div class="page-header">
+                    <h1>Welcome, <span id="welcomeName">Member</span>!</h1>
+                    <p id="welcomeRole">Your library account overview</p>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon book-icon">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Total Books</h3>
+                            <p class="stat-number" id="totalBooks">0</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon available-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Available Books</h3>
+                            <p class="stat-number" id="availableBooks">0</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon issued-icon">
+                            <i class="fas fa-arrow-right-from-bracket"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>Books With Me</h3>
+                            <p class="stat-number" id="myIssuedBooks">0</p>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon member-icon">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="stat-info">
+                            <h3>New Arrivals</h3>
+                            <p class="stat-number" id="newArrivalsCount">0</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fine Info -->
+                <div class="fine-info-card" id="fineInfoCard">
+                    <div class="fine-info-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="fine-info-content">
+                        <h3>Your Pending Fines</h3>
+                        <p class="fine-amount" id="pendingFineAmount">₹0</p>
+                        <p class="fine-note">Please return overdue books to avoid further fines.</p>
+                    </div>
+                </div>
+
+                <!-- Recently Issued -->
+                <div class="recent-activities">
+                    <h3>My Recent Books</h3>
+                    <div id="recentIssuesList" class="activities-list">
+                        <p>Loading...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Browse Books Page -->
+            <div id="booksPage" class="page">
+                <div class="page-header">
+                    <h1>Browse Books</h1>
+                    <p>Search and explore the library collection</p>
+                </div>
+
+                <div class="filter-section">
+                    <div class="search-filter">
+                        <input type="text" id="bookSearch" placeholder="Search by title, author, ISBN...">
+                        <select id="categoryFilter">
+                            <option value="">All Categories</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="booksGrid" class="books-grid">
+                    <p>Loading books...</p>
+                </div>
+
+                <div class="pagination" id="booksPagination"></div>
+            </div>
+
+            <!-- My Issued Books Page -->
+            <div id="myIssuesPage" class="page">
+                <div class="page-header">
+                    <h1>My Issued Books</h1>
+                    <p>Track your issued books, due dates, and fines</p>
+                </div>
+
+                <div class="filter-section">
+                    <div class="search-filter">
+                        <select id="issueStatusFilter">
+                            <option value="">All Records</option>
+                            <option value="issued">Currently Issued</option>
+                            <option value="returned">Returned</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Book</th>
+                                <th>Issue Date</th>
+                                <th>Due Date</th>
+                                <th>Returned On</th>
+                                <th>Status</th>
+                                <th>Fine</th>
+                            </tr>
+                        </thead>
+                        <tbody id="myIssuesTableBody">
+                            <tr><td colspan="6" class="text-center">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- My Returned Books Page -->
+            <div id="myReturnsPage" class="page">
+                <div class="page-header">
+                    <h1>My Returned Books</h1>
+                    <p>View your returned books, return dates, and fines</p>
+                </div>
+
+                <div class="filter-section">
+                    <div class="search-filter">
+                        <input type="text" id="returnSearch" placeholder="Search returned books...">
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Book</th>
+                                <th>Issue Date</th>
+                                <th>Due Date</th>
+                                <th>Returned On</th>
+                                <th>Status</th>
+                                <th>Fine Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="myReturnsTableBody">
+                            <tr><td colspan="6" class="text-center">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Pay Fines Page -->
+            <div id="payFinesPage" class="page">
+                <div class="page-header">
+                    <h1>Pay Fines</h1>
+                    <p>Pay your library fines online securely</p>
+                </div>
+
+                <!-- Outstanding Fines -->
+                <div class="fines-section">
+                    <div class="fines-section-header">
+                        <h3>Outstanding Fines</h3>
+                        <span class="fines-total" id="finesTotalAmount">₹0</span>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Book</th>
+                                    <th>Reason</th>
+                                    <th>Due Date</th>
+                                    <th>Fine Amount</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="finesTableBody">
+                                <tr><td colspan="5" class="text-center">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Payment History -->
+                <div class="fines-section">
+                    <div class="fines-section-header">
+                        <h3>Payment History</h3>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Payment ID</th>
+                                    <th>Transaction ID</th>
+                                    <th>Amount</th>
+                                    <th>Method</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paymentHistoryTableBody">
+                                <tr><td colspan="6" class="text-center">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- New Arrivals Page -->
+            <div id="newArrivalsPage" class="page">
+                <div class="page-header">
+                    <h1>New Arrivals</h1>
+                    <p>Newly added books to the library</p>
+                </div>
+
+                <div id="newArrivalsGrid" class="books-grid">
+                    <p>Loading new arrivals...</p>
+                </div>
+            </div>
+
+            <!-- Profile Page -->
+            <div id="profilePage" class="page">
+                <div class="page-header">
+                    <h1>My Profile</h1>
+                </div>
+
+                <div class="profile-container">
+                    <div class="profile-card">
+                        <div class="profile-header">
+                            <img id="profileImage" src="https://via.placeholder.com/150" alt="Profile">
+                            <h2 id="profileName">Member</h2>
+                            <p id="profileType">Student</p>
+                        </div>
+
+                        <form id="profileForm" class="library-form">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="profileUsername">Username</label>
+                                    <input type="text" id="profileUsername" readonly>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="profileEmail">Email</label>
+                                    <input type="email" id="profileEmail" readonly>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="profilePhone">Phone</label>
+                                    <input type="tel" id="profilePhone">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="profileDepartment">Department</label>
+                                    <input type="text" id="profileDepartment">
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="profileRoll">Roll Number</label>
+                                    <input type="text" id="profileRoll">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="profileAddress">Address</label>
+                                    <input type="text" id="profileAddress">
+                                </div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Update Profile
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <!-- Loading Spinner -->
+    <div id="loadingSpinner" class="loading-spinner hidden">
+        <div class="spinner"></div>
+    </div>
+
+    <!-- ==================== PAYMENT GATEWAY (scoped) ==================== -->
+    <div class="payment-gateway-app">
+        <!-- Payment Modal -->
+        <div id="pgPaymentModal" class="payment-modal hidden">
+            <div class="modal-overlay"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="merchant-info">
+                        <h2 id="pgMerchantName">Smart Library</h2>
+                    </div>
+                    <button class="close-btn" id="pgCloseBtn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="order-details">
+                    <div class="detail-row">
+                        <span>Order ID:</span>
+                        <strong id="pgOrderId">ORD-XXXX</strong>
+                    </div>
+                    <div class="detail-row">
+                        <span>Customer:</span>
+                        <strong id="pgCustomerName">Loading...</strong>
+                    </div>
+                    <div class="detail-row">
+                        <span>Amount:</span>
+                        <strong id="pgTotalAmount">₹0</strong>
+                    </div>
+                </div>
+
+                <div class="payment-tabs">
+                    <button class="tab-btn active" data-tab="upi">
+                        <span class="tab-icon">📱</span> UPI
+                    </button>
+                    <button class="tab-btn" data-tab="card">
+                        <span class="tab-icon">💳</span> Card
+                    </button>
+                    <button class="tab-btn" data-tab="wallet">
+                        <span class="tab-icon">👛</span> Wallet
+                    </button>
+                    <button class="tab-btn" data-tab="netbanking">
+                        <span class="tab-icon">🏦</span> Net Banking
+                    </button>
+                </div>
+
+                <div class="tab-content">
+                    <!-- UPI Tab -->
+                    <div id="pgTabUpi" class="tab-pane active">
+                        <h3>Select UPI App</h3>
+                        <div class="upi-apps">
+                            <button class="upi-app" data-upi="googlepay">
+                                <span class="upi-logo" style="width:40px;height:40px;background:#4285F4;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:700;">G</span>
+                                Google Pay
+                            </button>
+                            <button class="upi-app" data-upi="phonepe">
+                                <span class="upi-logo" style="width:40px;height:40px;background:#5F259F;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:700;">P</span>
+                                PhonePe
+                            </button>
+                            <button class="upi-app" data-upi="paytm">
+                                <span class="upi-logo" style="width:40px;height:40px;background:#00BAF2;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:700;">P</span>
+                                Paytm
+                            </button>
+                            <button class="upi-app" data-upi="bhim">
+                                <span class="upi-logo" style="width:40px;height:40px;background:#8B5CF6;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:700;">B</span>
+                                BHIM
+                            </button>
+                            <button class="upi-app" data-upi="amazon">
+                                <span class="upi-logo" style="width:40px;height:40px;background:#FF9500;border-radius:6px;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-weight:700;">A</span>
+                                Amazon Pay
+                            </button>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Enter UPI ID</label>
+                            <input type="text" id="pgUpiId" class="form-input" placeholder="abc@oksbi">
+                            <small>Example: abc@ybl, abc@paytm, abc@oksbi</small>
+                        </div>
+
+                        <div class="button-group">
+                            <button id="pgVerifyUpiBtn" class="btn btn-secondary">Verify UPI</button>
+                            <button id="pgUpiPayBtn" class="btn btn-primary">Pay Now</button>
+                        </div>
+
+                        <div id="pgUpiVerification" class="verification-status hidden">
+                            <div class="verification-check">✓</div>
+                            <p>Verified Successfully</p>
+                        </div>
+                    </div>
+
+                    <!-- Card Tab -->
+                    <div id="pgTabCard" class="tab-pane">
+                        <div class="card-preview">
+                            <div class="card-display">
+                                <div class="card-chip">
+                                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                                        <rect width="48" height="48" rx="4" fill="#FFB81C"/>
+                                        <circle cx="15" cy="16" r="6" fill="#FF5F00"/>
+                                        <circle cx="33" cy="16" r="6" fill="#EB001B"/>
+                                    </svg>
+                                </div>
+                                <div class="card-number" id="pgCardNumberDisplay">•••• •••• •••• ••••</div>
+                                <div class="card-holder" id="pgCardHolderDisplay">CARDHOLDER NAME</div>
+                                <div class="card-expiry" id="pgCardExpiryDisplay">MM/YY</div>
+                                <div class="card-icon" id="pgCardIconDisplay">💳</div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Card Number</label>
+                            <input type="text" id="pgCardNumber" class="form-input" placeholder="1234 5678 9012 3456" maxlength="19">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Cardholder Name</label>
+                            <input type="text" id="pgCardHolder" class="form-input" placeholder="Your Name">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Expiry Date</label>
+                                <input type="text" id="pgCardExpiry" class="form-input" placeholder="MM/YY" maxlength="5">
+                            </div>
+                            <div class="form-group">
+                                <label>CVV</label>
+                                <input type="text" id="pgCardCvv" class="form-input" placeholder="123" maxlength="3">
+                            </div>
+                        </div>
+
+                        <button id="pgCardPayBtn" class="btn btn-primary">Pay Now</button>
+                    </div>
+
+                    <!-- Wallet Tab -->
+                    <div id="pgTabWallet" class="tab-pane">
+                        <h3>Choose Wallet</h3>
+                        <div class="wallet-options">
+                            <button class="wallet-option" data-wallet="paytm">
+                                <div class="wallet-icon">👛</div>
+                                <div class="wallet-name">Paytm Wallet</div>
+                            </button>
+                            <button class="wallet-option" data-wallet="amazon">
+                                <div class="wallet-icon">🛒</div>
+                                <div class="wallet-name">Amazon Pay</div>
+                            </button>
+                            <button class="wallet-option" data-wallet="mobikwik">
+                                <div class="wallet-icon">💰</div>
+                                <div class="wallet-name">Mobikwik</div>
+                            </button>
+                            <button class="wallet-option" data-wallet="freecharge">
+                                <div class="wallet-icon">⚡</div>
+                                <div class="wallet-name">Freecharge</div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Net Banking Tab -->
+                    <div id="pgTabNetbanking" class="tab-pane">
+                        <h3>Select Bank</h3>
+                        <div class="form-group bank-select-wrap">
+                            <select id="pgBankSelect" class="form-input">
+                                <option value="">Choose Your Bank</option>
+                                <option value="sbi">State Bank of India (SBI)</option>
+                                <option value="hdfc">HDFC Bank</option>
+                                <option value="icici">ICICI Bank</option>
+                                <option value="axis">Axis Bank</option>
+                                <option value="pnb">Punjab National Bank (PNB)</option>
+                                <option value="canara">Canara Bank</option>
+                                <option value="bob">Bank of Baroda (BOB)</option>
+                            </select>
+                        </div>
+                        <button id="pgNetbankingBtn" class="btn btn-primary">Continue</button>
+                    </div>
+                </div>
+
+                <div class="security-footer">
+                    <span class="security-icon">🔒</span>
+                    <span>Secure payment powered by Smart Library Payment Gateway</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Processing Modal -->
+        <div id="pgProcessingModal" class="payment-modal hidden">
+            <div class="modal-overlay"></div>
+            <div class="processing-content">
+                <div class="spinner-ring"></div>
+                <h3>Processing Payment</h3>
+                <div class="processing-steps">
+                    <div class="step active">
+                        <span class="step-icon">...</span>
+                        <span class="step-text">Connecting to Bank</span>
+                    </div>
+                    <div class="step">
+                        <span class="step-icon">...</span>
+                        <span class="step-text">Authenticating</span>
+                    </div>
+                    <div class="step">
+                        <span class="step-icon">...</span>
+                        <span class="step-text">Processing Payment</span>
+                    </div>
+                    <div class="step">
+                        <span class="step-icon">...</span>
+                        <span class="step-text">Verifying</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Modal -->
+        <div id="pgSuccessModal" class="payment-modal hidden">
+            <div class="modal-overlay"></div>
+            <div class="success-content">
+                <div class="success-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                </div>
+                <h2>Payment Successful</h2>
+                <p>Transaction Successful</p>
+
+                <div class="receipt-details">
+                    <div class="receipt-row">
+                        <span>Transaction ID:</span>
+                        <strong id="pgTxnId">TXN-XXXX</strong>
+                    </div>
+                    <div class="receipt-row">
+                        <span>Order ID:</span>
+                        <strong id="pgSuccessOrderId">ORD-XXXX</strong>
+                    </div>
+                    <div class="receipt-row">
+                        <span>Amount Paid:</span>
+                        <strong id="pgSuccessAmount">₹0</strong>
+                    </div>
+                    <div class="receipt-row">
+                        <span>Date:</span>
+                        <strong id="pgSuccessDate">--</strong>
+                    </div>
+                    <div class="receipt-row">
+                        <span>Time:</span>
+                        <strong id="pgSuccessTime">--:--</strong>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button id="pgDownloadReceiptBtn" class="btn btn-secondary">Download Receipt</button>
+                    <button id="pgContinueBtn" class="btn btn-primary">Continue</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Failure Modal -->
+        <div id="pgFailureModal" class="payment-modal hidden">
+            <div class="modal-overlay"></div>
+            <div class="failure-content">
+                <div class="failure-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                    </svg>
+                </div>
+                <h2>Payment Failed</h2>
+                <p>Transaction Unsuccessful</p>
+                <div class="failure-reason">
+                    <strong>Reason:</strong>
+                    <p id="pgFailureReason">Network Error</p>
+                </div>
+                <div class="button-group">
+                    <button id="pgRetryBtn" class="btn btn-primary">Retry Payment</button>
+                    <button id="pgCancelBtn" class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Container -->
+        <div id="pgToastContainer" class="toast-container"></div>
+    </div>
+
+    <!-- Payment Gateway Scripts -->
+    <script src="{{ url_for('static', filename='js/payment-gateway/ui.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/payment-gateway/validation.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/payment-gateway/receipt.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/payment-gateway/payment.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/payment-gateway/app.js') }}"></script>
+
+    <script src="{{ url_for('static', filename='js/member.js') }}"></script>
+</body>
+</html>
+
