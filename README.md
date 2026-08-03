@@ -570,7 +570,7 @@ For issues and questions:
 
 ## Contact
 
-For questions and support, please contact the development team - ## https://portfolio-yxmp.onrender.com/
+For questions and support, please contact the development team - https://portfolio-yxmp.onrender.com/
 
 ---
 
