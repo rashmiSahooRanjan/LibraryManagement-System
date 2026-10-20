@@ -568,6 +568,12 @@ For issues and questions:
 - Responsive design
 - Production-ready code
 
+## 👨‍💻 Authors
+
+| Name                          | Role      |
+| ----------------------------- | --------- |
+| **Rashmi Ranjan Sahoo**       | Developer |
+
 ## Contact
 
 For questions and support, please contact the development team - https://portfolio-yxmp.onrender.com/
